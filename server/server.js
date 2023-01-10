@@ -5,12 +5,14 @@ const app = express();
 
 app.use(express.json());
 
-const port = process.env.PORT || 3000;
-
 app.get("/", (req, res) => res.send("SERVER IS UNDER CONSTRUCTION"));
 
-void (function start() {
+void (async function start() {
+  const connectDB = require("./db/connectDB");
+  const port = process.env.PORT || 3000;
+
   try {
+    await connectDB(process.env.MONGO_URI);
     app.listen(port, () => {
       console.log("Server is up and running at port " + port);
     });
