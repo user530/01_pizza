@@ -5,8 +5,13 @@ const app = express();
 
 app.use(express.json());
 
-app.get("/", (req, res) => res.send("SERVER IS UNDER CONSTRUCTION"));
+// Import routers
+const productRouter = require("./routers/products");
 
+// Setup routers
+app.use("/api/v1/", productRouter);
+
+// Declare and invoke start function
 void (async function start() {
   const connectDB = require("./db/connectDB");
   const port = process.env.PORT || 3000;
@@ -19,6 +24,6 @@ void (async function start() {
   } catch (error) {
     console.log("Server failed to start, terminating...");
     console.error(error);
-    process.exit(1);
+    // process.exit(1);
   }
 })();
