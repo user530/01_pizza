@@ -1,12 +1,37 @@
 require("dotenv").config({ path: "./.env" });
 
+// Express module import and server instance
 const express = require("express");
 const app = express();
 
 // Use async error module
 require("express-async-errors");
 
+// Import CORS middleware
+const cors = require("cors");
+// Import Helmet to handle security headers
+const helmet = require("helmet");
+// Import Node input sanitizer
+const xss = require("xss-clean");
+// Import Express rate limiter
+const rateLimiter = require("express-rate-limit");
+
+// Setup json use
 app.use(express.json());
+
+// Setup rate limit (100 req/15 min)
+const limiter = rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Use security middleware for all routes
+app.use(cors());
+app.use(helmet());
+app.use(xss());
+app.use(limiter);
 
 // Import custom middleware
 const { errorHandler, notFound } = require("./middleware");
