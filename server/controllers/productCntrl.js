@@ -1,10 +1,12 @@
 const Product = require("../models/Product");
+const { NotFoundError, BadRequestError } = require("../errors");
+const { StatusCodes } = require("http-status-codes");
 
 const getAllProducts = async (req, res, next) => {
   const products = await Product.find({}).sort({ productType: 1, name: 1 });
 
   return res
-    .status(200)
+    .status(StatusCodes.OK)
     .json({ success: true, size: products.length, data: products });
 };
 
@@ -12,15 +14,19 @@ const getSingleProduct = async (req, res, next) => {
   const singleProduct = await Product.findOne({ _id: req.params.id });
 
   if (!singleProduct)
-    throw new Error(`Продукт с ID: ${req.params.id} не найден!`); // CHANGE ERR TYPE!
+    throw new NotFoundError(`Продукт с ID: ${req.params.id} не найден!`);
 
-  return res.status(200).json({ success: true, data: singleProduct });
+  return res
+    .status(StatusCodes.OK)
+    .json({ success: true, data: singleProduct });
 };
 
 const addProduct = async (req, res, next) => {
   const newProduct = await Product.create(req.body);
 
-  return res.status(201).json({ success: true, data: newProduct });
+  return res
+    .status(StatusCodes.CREATED)
+    .json({ success: true, data: newProduct });
 };
 
 const updateProduct = async (req, res, next) => {
@@ -36,7 +42,7 @@ const updateProduct = async (req, res, next) => {
     !price ||
     !tags
   )
-    throw new Error("Пожалуйста, заполните все обязательные поля!");
+    throw new BadRequestError("Пожалуйста, заполните все обязательные поля!");
 
   const updatedProduct = await Product.findOneAndUpdate(
     { _id: req.params.id },
@@ -45,7 +51,7 @@ const updateProduct = async (req, res, next) => {
   );
 
   if (!updatedProduct)
-    throw new Error(`Продукт с ID: ${req.params.id} не найден!`);
+    throw new NotFoundError(`Продукт с ID: ${req.params.id} не найден!`);
 
   return res.status(202).json({ success: true, data: updatedProduct });
 };
@@ -53,7 +59,8 @@ const updateProduct = async (req, res, next) => {
 const deleteProduct = async (req, res, next) => {
   const deleted = await Product.findOneAndDelete({ _id: req.params.id });
 
-  if (!deleted) throw new Error(`Продукт с ID: ${req.params.id} не найден!`);
+  if (!deleted)
+    throw new NotFoundError(`Продукт с ID: ${req.params.id} не найден!`);
 
   return res.status(200).json({ success: true, data: deleted });
 };
