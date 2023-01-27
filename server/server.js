@@ -38,9 +38,14 @@ const { errorHandler, notFound } = require("./middleware");
 
 // Import routers
 const productRouter = require("./routers/products");
+const productTypesRouter = require("./routers/productTypes");
+
+// Public resources
+app.use("/public", express.static("static"));
 
 // Setup routers
 app.use("/api/v1/", productRouter);
+app.use("/api/v1/", productTypesRouter);
 
 // Setup custom middleware
 app.use(notFound);

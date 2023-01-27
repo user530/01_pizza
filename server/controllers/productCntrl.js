@@ -30,14 +30,14 @@ const addProduct = async (req, res, next) => {
 };
 
 const updateProduct = async (req, res, next) => {
-  const { name, productType, weight, size, ingredients, price, tags } =
+  const { name, productType, weight, options, ingredients, price, tags } =
     req.body;
 
   if (
     !name ||
     !productType ||
     !weight ||
-    !size ||
+    !options ||
     !ingredients ||
     !price ||
     !tags
@@ -53,7 +53,9 @@ const updateProduct = async (req, res, next) => {
   if (!updatedProduct)
     throw new NotFoundError(`Продукт с ID: ${req.params.id} не найден!`);
 
-  return res.status(202).json({ success: true, data: updatedProduct });
+  return res
+    .status(StatusCodes.ACCEPTED)
+    .json({ success: true, data: updatedProduct });
 };
 
 const deleteProduct = async (req, res, next) => {
@@ -62,7 +64,7 @@ const deleteProduct = async (req, res, next) => {
   if (!deleted)
     throw new NotFoundError(`Продукт с ID: ${req.params.id} не найден!`);
 
-  return res.status(200).json({ success: true, data: deleted });
+  return res.status(StatusCodes.OK).json({ success: true, data: deleted });
 };
 
 module.exports = {
