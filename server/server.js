@@ -41,6 +41,7 @@ const productRouter = require("./routers/products");
 const productTypesRouter = require("./routers/productTypes");
 const contactFormRouter = require("./routers/contactForms");
 const userRouter = require("./routers/users");
+const authRouter = require("./routers/authorization");
 
 // Public resources
 app.use("/public", express.static("static"));
@@ -49,13 +50,11 @@ app.use("/public", express.static("static"));
 app.options("/", cors());
 
 // Setup routers
-app.use(
-  "/api/v1/",
-  productRouter,
-  productTypesRouter,
-  contactFormRouter,
-  userRouter
-);
+app.use("/api/v1/product_types", productTypesRouter);
+app.use("/api/v1/products", productRouter);
+app.use("/api/v1/contact", contactFormRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/auth", authRouter);
 
 // Setup custom middleware
 app.use(notFound);

@@ -8,7 +8,7 @@ const {
   deleteSingleForm,
 } = require("../controllers/contactFormCntrl");
 
-router.route("/contact").get(getAllForms).post(addSingleForm);
-router.route("/contact/:id").get(getSingleForm).delete(deleteSingleForm);
+router.route("/").get(getAllForms).post(addSingleForm);
+router.route("/:id").get(getSingleForm).delete(deleteSingleForm);
 
 module.exports = router;

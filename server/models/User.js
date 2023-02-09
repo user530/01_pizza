@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const path = require("path");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -65,13 +66,7 @@ const UserSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      default: function () {
-        const id = this._id;
-        console.log("User Schema - Photo ID");
-        console.log(id);
-        if (id) return `${id}.jpg`;
-        return null;
-      },
+      default: "/static/images/uploads/default.jpg",
     },
     subscriptions: {
       messages: {
@@ -94,16 +89,8 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    // verificationToken: {
-    //   type: String,
-    //   // default: function(){
-    //   //     //generate token
-    //   // }
-    // },
-    // verificatoinDate: {
-    //   type: Date,
-    //   default: Date.now,
-    // },
+    verificationToken: String,
+    verificationDate: Date,
     // passwordToken: {
     //   type: String,
     // },

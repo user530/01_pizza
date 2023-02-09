@@ -11,9 +11,9 @@ const {
 } = require("../controllers/prodTypesCntrl");
 
 // Set-up routes
-router.route("/product_types").get(getAllProdTypes).post(addProdType);
+router.route("/").get(getAllProdTypes).post(addProdType);
 router
-  .route("/product_types/:id")
+  .route("/:id")
   .get(getSingleProdType)
   .patch(updateProdType)
   .delete(deleteProdType);

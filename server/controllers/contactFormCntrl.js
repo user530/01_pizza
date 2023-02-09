@@ -1,6 +1,6 @@
 const ContactForm = require("../models/ContactForm");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, NotFoundError } = require("../errors");
+const { NotFoundError } = require("../errors");
 
 const getAllForms = async (req, res, next) => {
   const allForms = await ContactForm.find({}).sort({ createdAt: 1 });

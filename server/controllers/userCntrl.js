@@ -1,6 +1,5 @@
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
-
 const { NotFoundError, BadRequestError } = require("../errors");
 
 const getAllUsers = async (req, res, next) => {
@@ -18,12 +17,6 @@ const getSingleUser = async (req, res, next) => {
     throw new NotFoundError(`Продукт с ID: ${req.params.id} не найден!`);
 
   return res.status(StatusCodes.OK).json({ success: true, data: user });
-};
-
-const addUser = async (req, res) => {
-  const newUser = await User.create(req.body);
-
-  return res.status(StatusCodes.CREATED).json({ success: true, data: newUser });
 };
 
 const updateUser = async (req, res, next) => {
@@ -47,4 +40,4 @@ const updateUser = async (req, res, next) => {
     .json({ success: true, data: updatedUser });
 };
 
-module.exports = { getAllUsers, getSingleUser, addUser, updateUser };
+module.exports = { getAllUsers, getSingleUser, updateUser };

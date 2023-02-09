@@ -11,9 +11,9 @@ const {
 } = require("../controllers/productCntrl");
 
 // Set-up routes
-router.route("/products").get(getAllProducts).post(addProduct);
+router.route("/").get(getAllProducts).post(addProduct);
 router
-  .route("/products/:id")
+  .route("/:id")
   .get(getSingleProduct)
   .patch(updateProduct)
   .delete(deleteProduct);
