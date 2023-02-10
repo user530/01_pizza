@@ -26,7 +26,9 @@ const errorHandler = async (error, req, res, next) => {
   //   Ошибка дублирования уникальных данных
   if (error.code && error.code === 11000) {
     customError.statusCode = StatusCodes.BAD_REQUEST;
-    customError.message = `Невозможно добавить уникальное значение: ${error.keyValue.name}`;
+    customError.message = `Невозможно добавить уникальное значение: ${Object.keys(
+      error.keyValue
+    ).join(", ")}`;
   }
 
   return res.status(customError.statusCode).json({ errors: customError });

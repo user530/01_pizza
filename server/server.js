@@ -16,7 +16,7 @@ const xss = require("xss-clean");
 // Import Express rate limiter
 const rateLimiter = require("express-rate-limit");
 
-// Setup json use
+// Setup body parser and json use
 app.use(express.json());
 
 // Setup rate limit (100 req/15 min)

@@ -2,6 +2,7 @@ const User = require("../models/User");
 const crypto = require("crypto");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError } = require("../errors");
+const sendVerificationEmail = require("../utils/sendVerificationEmail");
 
 const register = async (req, res) => {
   const { email, phone, password, login, name } = req.body;
@@ -36,9 +37,20 @@ const register = async (req, res) => {
     verificationToken,
   });
 
+  // Server origin
+  const origin = process.env.SERVER_ORIGIN;
+
+  // Send verification email
+  await sendVerificationEmail({
+    email: newUser.email,
+    name: newUser.name,
+    verificationToken: newUser.verificationToken,
+    origin,
+  });
+
   return res.status(StatusCodes.CREATED).json({
     success: true,
-    msg: "Account created! Please, check you email to verify your account.",
+    msg: "Аккаунт успешно создан! Пожалуйста, проверьте почту и активируйте ваш аккаунт для завершения регистрации.",
   });
 };
 
