@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const path = require("path");
+const bcrypt = require("bcrypt");
 
 const UserSchema = new mongoose.Schema(
   {
@@ -103,5 +104,19 @@ const UserSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// Hash the password on save
+UserSchema.pre("save", async function () {
+  // If password is not changed -> skip
+  if (!this.isModified("password")) return;
+
+  const salt = await bcrypt.genSalt();
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Built in method to compare passwords
+UserSchema.method("comparePasswords", async function (passToCompare) {
+  return await bcrypt.compare(passToCompare, this.password);
+});
 
 module.exports = mongoose.model("User", UserSchema);

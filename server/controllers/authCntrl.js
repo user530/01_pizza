@@ -1,7 +1,9 @@
 const User = require("../models/User");
+const Token = require("../models/Token");
 const crypto = require("crypto");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, NotFoundError } = require("../errors");
+const { BadRequestError, UnauthorizedError } = require("../errors");
+
 const sendVerificationEmail = require("../utils/sendVerificationEmail");
 
 const register = async (req, res) => {
@@ -61,12 +63,12 @@ const verifyEmail = async (req, res) => {
   const verifiedUser = await User.findOne({ email });
 
   if (!verifiedUser)
-    throw new BadRequestError(
+    throw new UnauthorizedError(
       "В процессе авторизации произошла ошибка. Пожалуйста повторите запрос позднее или обратитесь в службу поддержки."
     );
 
   if (verifiedUser.verificationToken !== token)
-    throw new BadRequestError(
+    throw new UnauthorizedError(
       "В процессе авторизации произошла ошибка. Пожалуйста повторите запрос позднее или обратитесь в службу поддержки."
     );
 
@@ -84,6 +86,98 @@ const verifyEmail = async (req, res) => {
   return res
     .status(StatusCodes.OK)
     .json({ success: true, message: "Аккаунт успешно активирован." });
+};
+
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    throw new BadRequestError("Пожалуйста, введите данные вашего аккаунта.");
+
+  const user = await User.findOne({ email });
+
+  if (!user)
+    throw new UnauthorizedError(
+      "В процессе авторизации произошла ошибка. Некорректные данные авторизации."
+    );
+
+  const passIsValid = await User.comparePasswords(password);
+
+  if (!passIsValid)
+    throw new UnauthorizedError(
+      "В процессе авторизации произошла ошибка. Некорректные данные авторизации."
+    );
+
+  const userIsVerified = user.isVerified;
+
+  if (!userIsVerified)
+    throw new UnauthorizedError(
+      "В процессе авторизации произошла ошибка. Ваш аккаунт ещё не активирован."
+    );
+
+  // Prepare user data
+  const tokenizedUser = {
+    id: user._id,
+    role: user.role,
+    name: user.name,
+    phone: user.phone,
+    address: user.address,
+    // etc
+  };
+
+  // Prepare refresh token
+  let refreshToken = "";
+
+  // Check if user already have designated token
+  const token = await Token.findOne({ user: tokenizedUser.id });
+
+  if (token) {
+    const { isValid } = token;
+
+    if (!isValid)
+      throw new UnauthorizedError(
+        "В процессе авторизации произошла ошибка. Некорректные данные авторизации."
+      );
+
+    // If user already have valid token
+    refreshToken = token.refreshToken;
+    // ATTACH THIS TOKEN TO THE RESULT
+    // AttachToken
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: { user: tokenizedUser } });
+  }
+
+  // If no token exist, create new refresh token
+  refreshToken = crypto.randomBytes(40).toString("hex");
+  const ip = req.ip;
+  const userAgent = req.headers["user-agent"];
+
+  const newTokenObj = { user: tokenizedUser.id, ip, userAgent, refreshToken };
+
+  await Token.create(newTokenObj);
+
+  // ATTACH THIS TOKEN TO THE RESULT
+  // AttachToken logic
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ success: true, data: { user: tokenizedUser } });
+};
+
+const logout = async (req, res) => {
+  const { id } = req.user;
+
+  // Delete designated token
+  await Token.findOneAndDelete({ user: id });
+
+  // CLEAR COOKIES
+  // Clear cookies logic
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ success: true, message: "Вы успешно вышли из учётной записи." });
 };
 
 module.exports = { register, verifyEmail };
