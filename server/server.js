@@ -19,6 +19,8 @@ const rateLimiter = require("express-rate-limit");
 // Setup body parser and json use
 app.use(express.json());
 
+// Setup proxy
+app.set("trust proxy", 1);
 // Setup rate limit (100 req/15 min)
 const limiter = rateLimiter({
   windowMs: 15 * 60 * 1000,

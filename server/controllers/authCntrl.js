@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const crypto = require("crypto");
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError } = require("../errors");
+const { BadRequestError, NotFoundError } = require("../errors");
 const sendVerificationEmail = require("../utils/sendVerificationEmail");
 
 const register = async (req, res) => {
@@ -50,8 +50,40 @@ const register = async (req, res) => {
 
   return res.status(StatusCodes.CREATED).json({
     success: true,
-    msg: "Аккаунт успешно создан! Пожалуйста, проверьте почту и активируйте ваш аккаунт для завершения регистрации.",
+    message:
+      "Аккаунт успешно создан! Пожалуйста, проверьте почту и активируйте ваш аккаунт для завершения регистрации.",
   });
 };
 
-module.exports = { register };
+const verifyEmail = async (req, res) => {
+  const { email, token } = req.query;
+
+  const verifiedUser = await User.findOne({ email });
+
+  if (!verifiedUser)
+    throw new BadRequestError(
+      "В процессе авторизации произошла ошибка. Пожалуйста повторите запрос позднее или обратитесь в службу поддержки."
+    );
+
+  if (verifiedUser.verificationToken !== token)
+    throw new BadRequestError(
+      "В процессе авторизации произошла ошибка. Пожалуйста повторите запрос позднее или обратитесь в службу поддержки."
+    );
+
+  // If everything is okay - verify the account and clear the token
+  verifiedUser.isVerified = true;
+  verifiedUser.verificationDate = Date.now();
+
+  verifiedUser.verificationToken = "";
+
+  // Save changes
+  await verifiedUser.save();
+
+  // return res.redirect("http://localhost:3000/");
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ success: true, message: "Аккаунт успешно активирован." });
+};
+
+module.exports = { register, verifyEmail };
