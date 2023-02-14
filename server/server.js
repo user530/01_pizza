@@ -15,6 +15,10 @@ const helmet = require("helmet");
 const xss = require("xss-clean");
 // Import Express rate limiter
 const rateLimiter = require("express-rate-limit");
+// Import Mongo sanitizer
+const sanitizer = require("express-mongo-sanitize");
+// Import Cookie parser
+const cookieParser = require("cookie-parser");
 
 // Setup body parser and json use
 app.use(express.json());
@@ -34,6 +38,11 @@ app.use(cors());
 app.use(helmet());
 app.use(xss());
 app.use(limiter);
+
+// Use sanitizer
+app.use(sanitizer());
+// Use cookie parser
+app.use(cookieParser(process.env.JWT_SECRET));
 
 // Import custom middleware
 const { errorHandler, notFound } = require("./middleware");

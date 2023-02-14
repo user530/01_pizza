@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError, UnauthorizedError } = require("../errors");
 
+const { attachCookiesToResponse } = require("../utils/jwt");
 const sendVerificationEmail = require("../utils/sendVerificationEmail");
 
 const register = async (req, res) => {
@@ -101,7 +102,7 @@ const login = async (req, res) => {
       "В процессе авторизации произошла ошибка. Некорректные данные авторизации."
     );
 
-  const passIsValid = await User.comparePasswords(password);
+  const passIsValid = await user.comparePasswords(password);
 
   if (!passIsValid)
     throw new UnauthorizedError(
@@ -141,8 +142,9 @@ const login = async (req, res) => {
 
     // If user already have valid token
     refreshToken = token.refreshToken;
-    // ATTACH THIS TOKEN TO THE RESULT
-    // AttachToken
+
+    // Set cookies
+    attachCookiesToResponse({ res, user: tokenizedUser, refreshToken });
 
     return res
       .status(StatusCodes.OK)
@@ -158,8 +160,8 @@ const login = async (req, res) => {
 
   await Token.create(newTokenObj);
 
-  // ATTACH THIS TOKEN TO THE RESULT
-  // AttachToken logic
+  // Set cookies
+  attachCookiesToResponse({ res, user: tokenizedUser, refreshToken });
 
   return res
     .status(StatusCodes.OK)
@@ -172,12 +174,18 @@ const logout = async (req, res) => {
   // Delete designated token
   await Token.findOneAndDelete({ user: id });
 
-  // CLEAR COOKIES
-  // Clear cookies logic
+  const cookieOptions = {
+    httpOnly: true,
+    expires: new Date(Date.now()),
+  };
+
+  // Clear cookies
+  res.cookie("accessToken", "logout", cookieOptions);
+  res.cookie("refreshToken", "logout", cookieOptions);
 
   return res
     .status(StatusCodes.OK)
     .json({ success: true, message: "Вы успешно вышли из учётной записи." });
 };
 
-module.exports = { register, verifyEmail };
+module.exports = { register, verifyEmail, login, logout };
