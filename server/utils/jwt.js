@@ -4,6 +4,8 @@ const createJWT = ({ payload }) => {
   return jwt.sign(payload, process.env.JWT_SECRET);
 };
 
+const isValid = (token) => jwt.verify(token, process.env.JWT_SECRET);
+
 const attachCookiesToResponse = ({ res, user, refreshToken }) => {
   const accessTokenJWT = createJWT({ payload: { user } });
   const refreshTokenJWT = createJWT({ payload: { user, refreshToken } });
@@ -13,7 +15,7 @@ const attachCookiesToResponse = ({ res, user, refreshToken }) => {
 
   const secureCookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     signed: true,
   };
 
@@ -28,4 +30,4 @@ const attachCookiesToResponse = ({ res, user, refreshToken }) => {
   });
 };
 
-module.exports = { attachCookiesToResponse };
+module.exports = { attachCookiesToResponse, isValid };
