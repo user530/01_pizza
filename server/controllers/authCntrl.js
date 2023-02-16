@@ -90,12 +90,12 @@ const verifyEmail = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { login, password } = req.body;
 
-  if (!email || !password)
+  if (!login || !password)
     throw new BadRequestError("Пожалуйста, введите данные вашего аккаунта.");
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ login });
 
   if (!user)
     throw new UnauthorizedError(

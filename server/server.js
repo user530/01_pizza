@@ -57,9 +57,6 @@ const authRouter = require("./routers/authorization");
 // Public resources
 app.use("/public", express.static("static"));
 
-// Handle OPTIONS requests
-app.options("/", cors());
-
 // Setup routers
 app.use("/api/v1/product_types", productTypesRouter);
 app.use("/api/v1/products", productRouter);

@@ -40,4 +40,12 @@ const updateUser = async (req, res, next) => {
     .json({ success: true, data: updatedUser });
 };
 
-module.exports = { getAllUsers, getSingleUser, updateUser };
+const getMe = async (req, res) => {
+  console.log("GET ME FIRED");
+
+  return res
+    .status(StatusCodes.OK)
+    .json({ success: true, data: { user: req.user } });
+};
+
+module.exports = { getAllUsers, getSingleUser, updateUser, getMe };

@@ -5,9 +5,16 @@ const {
   getAllUsers,
   getSingleUser,
   updateUser,
+  getMe,
 } = require("../controllers/userCntrl");
 
-router.route("/").get(getAllUsers);
-router.route("/:id").get(getSingleUser).patch(updateUser);
+const { authenticate } = require("../middleware/authenticate");
+
+router.route("/").get(authenticate, getAllUsers);
+router.route("/get_me").get(authenticate, getMe);
+router
+  .route("/:id")
+  .get(authenticate, getSingleUser)
+  .patch(authenticate, updateUser);
 
 module.exports = router;
