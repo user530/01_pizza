@@ -41,8 +41,6 @@ const updateUser = async (req, res, next) => {
 };
 
 const getMe = async (req, res) => {
-  console.log("GET ME FIRED");
-
   return res
     .status(StatusCodes.OK)
     .json({ success: true, data: { user: req.user } });
