@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const imgURL = `http://localhost:5000/public/images/products`;
+const imgURL = `/public/images/products`;
 
 const productTypesArr = [
   { id: 0, typeName: "Пицца" },

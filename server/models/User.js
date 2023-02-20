@@ -70,7 +70,7 @@ const UserSchema = new mongoose.Schema(
     },
     photo: {
       type: String,
-      default: "/static/images/uploads/default.jpg",
+      default: "/public/images/uploads/default.jpg",
     },
     subscriptions: {
       messages: {

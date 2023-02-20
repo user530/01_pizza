@@ -123,6 +123,7 @@ const login = async (req, res) => {
     name: user.name,
     phone: user.phone,
     address: user.address,
+    photo: user.photo,
     // etc
   };
 
