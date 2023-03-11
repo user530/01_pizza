@@ -12,7 +12,7 @@ const errorHandler = async (error, req, res, next) => {
     },
   };
 
-  const { status_code: errCode, message: errMsg } = customError.error;
+  let { status_code: errCode, message: errMsg } = customError.error;
 
   //   Ошибка формата данных
   if (error.name === "CastError" && error.path === "_id") {
