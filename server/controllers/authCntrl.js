@@ -14,6 +14,16 @@ const register = async (req, res) => {
   if (!email || !phone || !password || !login || !name)
     throw new BadRequestError("Предоставьте все требуемые данные.");
 
+  // Password validation (moved from the DB because hashing changes the password)
+  const passwordRegex =
+    /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&])[A-z\d!@#$%^&]{6,}$/;
+  const passwordValid = passwordRegex.test(password);
+
+  if (!passwordValid)
+    throw new BadRequestError(
+      "Пароль должен быть не меньше 6 символов и содержать как минимум одну заглавную и одну прописную букву, одну цифру и один спец символ. Допустимы символы латинского алфавита, цифры и специальные символы(!,@,#,$,%,^,&)."
+    );
+
   // Check if email is already used
   const existingUser = await User.findOne({ email });
 
@@ -90,7 +100,7 @@ const verifyEmail = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { login, password } = req.body;
+  const { login, password, anonymousCart } = req.body;
 
   if (!login || !password)
     throw new BadRequestError("Пожалуйста, введите данные вашего аккаунта.");
@@ -116,6 +126,17 @@ const login = async (req, res) => {
       "В процессе авторизации произошла ошибка. Ваш аккаунт ещё не активирован."
     );
 
+  // If user login first time
+  if (!user.cart) {
+    // Try to create the cart from anonymous shopping session
+    const cartCreated = cartFromArray(user, anonymousCart);
+    // If something went wrong -> just create empty cart
+    if (!cartCreated) {
+      user.cart = { products: [] };
+      user.save();
+    }
+  }
+
   // Prepare user data
   const tokenizedUser = {
     id: user._id,
@@ -124,6 +145,7 @@ const login = async (req, res) => {
     phone: user.phone,
     address: user.address,
     photo: user.photo,
+    cart: user.cart,
     // etc
   };
 
@@ -187,6 +209,21 @@ const logout = async (req, res) => {
   return res
     .status(StatusCodes.OK)
     .json({ success: true, message: "Вы успешно вышли из учётной записи." });
+};
+
+const cartFromArray = (user, cartItemsArr) => {
+  try {
+    cartItemsArr = JSON.parse(cartItemsArr);
+    // Assume that everything is valid, try to create the cart from array
+    user.cart = { products: cartItemsArr };
+    // Save runs validators
+    user.save();
+    // If all is right - return success flag
+    return true;
+  } catch (error) {
+    // If operation failed, return fail flag
+    return false;
+  }
 };
 
 module.exports = { register, verifyEmail, login, logout };

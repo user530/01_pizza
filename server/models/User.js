@@ -1,6 +1,45 @@
 const mongoose = require("mongoose");
-const path = require("path");
 const bcrypt = require("bcrypt");
+
+const userCart = new mongoose.Schema({
+  products: [
+    {
+      product: {
+        type: mongoose.Types.ObjectId,
+        ref: "newProduct",
+        required: [
+          true,
+          "Экзмепляр корзины должен иметь идентификатор продукта.",
+        ],
+      },
+      variant: {
+        type: mongoose.Types.ObjectId,
+        ref: "newProduct.variants",
+        required: [
+          true,
+          "Экзмепляр корзины должен иметь идентификатор варианта.",
+        ],
+      },
+      amount: {
+        type: Number,
+        required: [true, "Экзмепляр корзины должен иметь количество."],
+        min: [
+          1,
+          "Количество экземпляра корзины не должно быть меньше единицы.",
+        ],
+      },
+    },
+  ],
+});
+
+userCart.virtual("totalAmount", {
+  get() {
+    return this.products.reduce((ttlAmnt, singleProduct) => {
+      ttlAmnt += singleProduct.amount;
+      return ttlAmnt;
+    }, 0);
+  },
+});
 
 const UserSchema = new mongoose.Schema(
   {
@@ -40,10 +79,6 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Пожалуйста, введите ваш пароль."],
-      match: [
-        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&])[A-z\d!@#$%^&]{6,}$/,
-        "Допустимы символы латинского алфавита, цифры и специальные символы(!,@,#,$,%,^,&). Пароль должен быть не меньше 6 символов и содержать как минимум одну заглавную и одну прописную букву, одну цифру и один спец символ.",
-      ],
     },
     phone: {
       type: String,
@@ -102,7 +137,7 @@ const UserSchema = new mongoose.Schema(
     //   type: Date,
     // },
 
-    // cart: {},
+    cart: userCart,
     // orders: {},
   },
   { timestamps: true }

@@ -41,9 +41,12 @@ const updateUser = async (req, res, next) => {
 };
 
 const getMe = async (req, res) => {
+  const user = req.user;
+  const cart = req.user?.cart?.products;
+
   return res
     .status(StatusCodes.OK)
-    .json({ success: true, data: { user: req.user } });
+    .json({ success: true, data: { user, cart } });
 };
 
 module.exports = { getAllUsers, getSingleUser, updateUser, getMe };
