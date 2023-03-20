@@ -24,7 +24,7 @@ const updateUser = async (req, res, next) => {
   const { email, phone, address, photo, subscriptions } = req.body;
 
   if (!email || !phone || !address || !photo || !subscriptions)
-    throw new BadRequestError("Please, provide valid user information");
+    throw new BadRequestError("Пожалуйста, заполните все необходимые данные!");
 
   const updatedUser = await User.findOneAndUpdate(
     { _id: id },
@@ -40,13 +40,58 @@ const updateUser = async (req, res, next) => {
     .json({ success: true, data: updatedUser });
 };
 
+const addToUserCart = async (req, res) => {
+  const { id } = req.params;
+  const { product, variant, amount } = req.body;
+
+  if (!product || !variant || !amount)
+    throw new BadRequestError("Пожалуйста заполните данные продукта!");
+
+  const user = await User.findOne({ _id: id });
+
+  if (!user) throw new NotFoundError("Пользователь не найден!");
+
+  const userProducts = user.cart.products;
+
+  // Check if cart already has this item
+  const prodMatches = userProducts.filter(
+    (cartItem) =>
+      cartItem.product.toString() === product &&
+      cartItem.variant.toString() === variant
+  );
+
+  // Item doesn't exist -> add item to the cart
+  if (prodMatches.length === 0) {
+    const newProducts = [...userProducts, { product, variant, amount }];
+
+    user.cart.products.push({ product, variant, amount });
+    user.save();
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ success: true, data: newProducts });
+  }
+
+  // If item exists, increment the amount
+  prodMatches[0].amount += amount;
+  user.save();
+
+  return res.status(StatusCodes.OK).json({ success: true, data: userProducts });
+};
+
 const getMe = async (req, res) => {
   const user = req.user;
-  const cart = req.user?.cart?.products;
+  const cart = user?.cart?.products;
 
   return res
     .status(StatusCodes.OK)
     .json({ success: true, data: { user, cart } });
 };
 
-module.exports = { getAllUsers, getSingleUser, updateUser, getMe };
+module.exports = {
+  getAllUsers,
+  getSingleUser,
+  updateUser,
+  addToUserCart,
+  getMe,
+};
