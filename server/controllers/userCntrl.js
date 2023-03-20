@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError, BadRequestError } = require("../errors");
+const { attachCookiesToResponse } = require("../utils/jwt");
 
 const getAllUsers = async (req, res, next) => {
   const allUsers = await User.find({}).select("-password");
@@ -67,6 +68,8 @@ const addToUserCart = async (req, res) => {
     user.cart.products.push({ product, variant, amount });
     user.save();
 
+    // attachCookiesToResponse({ res, user });
+
     return res
       .status(StatusCodes.OK)
       .json({ success: true, data: newProducts });
@@ -80,8 +83,10 @@ const addToUserCart = async (req, res) => {
 };
 
 const getMe = async (req, res) => {
-  const user = req.user;
-  const cart = user?.cart?.products;
+  const { id } = req.user;
+
+  const user = await User.findOne({ _id: id });
+  const cart = user.cart.products;
 
   return res
     .status(StatusCodes.OK)
